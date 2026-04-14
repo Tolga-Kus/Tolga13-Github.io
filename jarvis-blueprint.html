@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS — Master Blueprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --dark: #0e0e0e;
+    --panel: #131313;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.15);
+    --accent: #00f5a0;
+    --accent2: #00b4ff;
+    --accent3: #ff4d6d;
+    --text: #e8e8e8;
+    --muted: #666;
+    --dimmed: #333;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* SCANLINE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(8,8,8,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 3rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--accent);
+  }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .hero-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,245,160,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 900px; }
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 14vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -2px;
+    color: #fff;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto 3rem;
+    line-height: 1.8;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--accent);
+    color: #000;
+    padding: 14px 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .hero-cta:hover { background: #fff; transform: translateY(-2px); }
+
+  /* SECTION BASE */
+  section { padding: 6rem 3rem; max-width: 1400px; margin: 0 auto; }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1;
+    color: #fff;
+    margin-bottom: 3rem;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ARCHITECTURE DIAGRAM */
+  .arch-diagram {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 4rem;
+  }
+  .arch-center {
+    background: var(--panel);
+    padding: 3rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+  }
+  .arch-center::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(0,245,160,0.2);
+  }
+  .arch-side {
+    background: var(--dark);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .arch-node {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .arch-node:hover { border-color: var(--accent); color: var(--accent); }
+  .arch-brain-icon {
+    font-size: 48px;
+    margin-bottom: 0.5rem;
+  }
+  .arch-brain-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    letter-spacing: 4px;
+  }
+  .arch-brain-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+  .arch-side-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  /* TOOL GRID */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .tool-card {
+    background: var(--panel);
+    padding: 2rem;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .tool-card:hover { background: #1a1a1a; }
+  .tool-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+  }
+  .tool-category {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+  .cat-brain { color: var(--accent); border-color: rgba(0,245,160,0.3); }
+  .cat-hands { color: var(--accent2); border-color: rgba(0,180,255,0.3); }
+  .cat-voice { color: #ff9f43; border-color: rgba(255,159,67,0.3); }
+  .cat-content { color: #a29bfe; border-color: rgba(162,155,254,0.3); }
+  .cat-film { color: var(--accent3); border-color: rgba(255,77,109,0.3); }
+  .cat-code { color: #55efc4; border-color: rgba(85,239,196,0.3); }
+  .cat-sales { color: #ffeaa7; border-color: rgba(255,234,167,0.3); }
+  .cat-monitor { color: #fd79a8; border-color: rgba(253,121,168,0.3); }
+  .cat-memory { color: #81ecec; border-color: rgba(129,236,236,0.3); }
+  .cat-gesture { color: #e17055; border-color: rgba(225,112,85,0.3); }
+
+  .tool-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .tool-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+  }
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.2rem; }
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    background: var(--dimmed);
+    color: var(--muted);
+    padding: 3px 8px;
+  }
+  .tool-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(0,245,160,0.3);
+    padding-bottom: 1px;
+    transition: all 0.2s;
+    margin-right: 1rem;
+  }
+  .tool-link:hover { color: #fff; border-color: #fff; }
+  .tool-link.blue { color: var(--accent2); border-color: rgba(0,180,255,0.3); }
+  .tool-link.blue:hover { color: #fff; border-color: #fff; }
+  .priority-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    background: rgba(0,245,160,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,245,160,0.3);
+  }
+
+  /* STACK TABLE */
+  .stack-table { width: 100%; border-collapse: collapse; margin-bottom: 3rem; }
+  .stack-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--dark);
+  }
+  .stack-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+    background: var(--panel);
+  }
+  .stack-table tr:hover td { background: #1a1a1a; }
+  .stack-table td:first-child { font-weight: 600; }
+  .stack-table td a {
+    color: var(--accent2);
+    text-decoration: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+  }
+  .stack-table td a:hover { color: #fff; }
+
+  /* ROADMAP */
+  .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .phase {
+    background: var(--panel);
+    padding: 2rem 1.5rem;
+  }
+  .phase-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    line-height: 1;
+    color: var(--dimmed);
+    margin-bottom: 0.5rem;
+  }
+  .phase-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1rem;
+  }
+  .phase-items { list-style: none; }
+  .phase-items li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .phase-items li::before {
+    content: '—';
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    flex-shrink: 0;
+  }
+  .phase.active { background: #111; }
+  .phase.active .phase-num { color: rgba(0,245,160,0.3); }
+
+  /* HANDS SECTION */
+  .hands-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+  .hand-card {
+    background: var(--panel);
+    padding: 2rem;
+    text-align: center;
+  }
+  .hand-icon {
+    font-size: 40px;
+    margin-bottom: 1rem;
+  }
+  .hand-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--accent2);
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+  }
+  .hand-desc { font-size: 13px; color: var(--muted); margin-bottom: 1rem; }
+  .code-block {
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: #a0a0a0;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    line-height: 1.8;
+  }
+  .code-block .kw { color: var(--accent); }
+  .code-block .str { color: var(--accent2); }
+  .code-block .comment { color: var(--dimmed); }
+
+  /* AGENTS SECTION */
+  .agents-ring {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+  .agent-card {
+    background: var(--panel);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: background 0.2s;
+  }
+  .agent-card:hover { background: #181818; }
+  .agent-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dimmed);
+  }
+  .agent-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .agent-role { font-size: 12px; color: var(--muted); }
+  .agent-tools { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 0.5rem; }
+  .agent-tool {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    background: var(--dimmed);
+    color: var(--muted);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--dimmed);
+  }
+  footer span { color: var(--accent); }
+
+  /* SCROLL ANIMATIONS */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) {
+    nav { padding: 0 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .arch-diagram { grid-template-columns: 1fr; }
+    .roadmap { grid-template-columns: repeat(2, 1fr); }
+    .hands-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">JARVIS</div>
+  <div class="nav-links">
+    <a href="#architecture">Architektur</a>
+    <a href="#brain">Gehirn</a>
+    <a href="#hands">Hände</a>
+    <a href="#agents">Agenten</a>
+    <a href="#tools">Tools</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+  <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">
+    <span class="status-dot"></span>SYSTEM ONLINE
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-tag">&#x2022; Master Blueprint v1.0 &#x2022; Dein digitales Imperium</div>
+    <h1>JARVIS<br><span>MASTER</span><br>PLAN</h1>
+    <p class="hero-sub">Ein intelligentes digitales Gehirn mit Hände. 10.000 Agenten. Vollautomatisch. Unaufhaltsam.</p>
+    <a href="#architecture" class="hero-cta">&#x2192; Blueprint starten</a>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="section-label">01 — Systemarchitektur</div>
+  <div class="section-title">Das Gehirn<br>hat Hände</div>
+
+  <div class="arch-diagram fade-in">
+    <div class="arch-side">
+      <div class="arch-side-label">&#x2190; Inputs</div>
+      <div class="arch-node">&#x1F5E3; Voice / Sprache</div>
+      <div class="arch-node">&#x1F91A; Finger / Gesten</div>
+      <div class="arch-node">&#x1F4F8; Vision / Kamera</div>
+      <div class="arch-node">&#x1F4DD; Text / Chat</div>
+      <div class="arch-node">&#x1F4CA; Daten / APIs</div>
+      <div class="arch-node">&#x1F517; Web / Scraping</div>
+      <div class="arch-node">&#x1F4E7; E-Mail / CRM</div>
+    </div>
+    <div class="arch-center">
+      <div class="arch-brain-icon">&#x1F9E0;</div>
+      <div class="arch-brain-title">JARVIS</div>
+      <div class="arch-brain-sub">ZENTRALES GEHIRN</div>
+      <div style="margin-top:1rem;font-size:12px;color:var(--muted);line-height:2;">
+        Claude Sonnet 4 · GPT-4o · Gemini 2.5<br>
+        LangGraph · CrewAI · AutoGen<br>
+        Langfuse · Pinecone · Redis<br>
+        n8n · Make · Zapier<br>
+        <strong style="color:var(--accent);font-family:'Space Mono',monospace;font-size:11px;">10.000+ Agenten gleichzeitig</strong>
+      </div>
+    </div>
+    <div class="arch-side">
+      <div class="arch-side-label">Outputs &#x2192;</div>
+      <div class="arch-node">&#x1F5A5; PC steuern</div>
+      <div class="arch-node">&#x1F3AC; Videos erstellen</div>
+      <div class="arch-node">&#x270D; Content posten</div>
+      <div class="arch-node">&#x1F4B0; Verkaufen</div>
+      <div class="arch-node">&#x1F527; Code schreiben</div>
+      <div class="arch-node">&#x1F4AC; Support führen</div>
+      <div class="arch-node">&#x1F6A8; Self-Healing</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);" class="fade-in">
+    <div style="background:var(--panel);padding:2rem;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--accent);">10K+</div>
+      <div style="color:var(--muted);font-size:13px;">Agenten gleichzeitig aktiv</div>
+    </div>
+    <div style="background:var(--panel);padding:2rem;border-left:1px solid var(--border);border-right:1px solid var(--border);">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--accent2);">24/7</div>
+      <div style="color:var(--muted);font-size:13px;">Vollautomatisch, ohne dich</div>
+    </div>
+    <div style="background:var(--panel);padding:2rem;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--accent3);">∞</div>
+      <div style="color:var(--muted);font-size:13px;">Skalierbar — kein Limit</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- BRAIN STACK -->
+<section id="brain">
+  <div class="section-label">02 — Das Gehirn</div>
+  <div class="section-title">KI-Stack &<br>Orchestrierung</div>
+
+  <div class="tool-grid fade-in">
+
+    <div class="tool-card">
+      <div class="tool-category cat-brain">&#x25CF; Kern-KI</div>
+      <div class="tool-name">Claude (Anthropic)</div>
+      <div class="tool-desc">Bestes Reasoning, Code, Planung. Jarvis-Hauptgehirn. Computer-Use für PC-Kontrolle. Claude Code für Terminal-Steuerung.</div>
+      <div class="tool-tags"><span class="tag">claude-sonnet-4</span><span class="tag">computer-use</span><span class="tag">claude-code</span></div>
+      <a href="https://claude.ai" target="_blank" class="tool-link">&#x2197; claude.ai</a>
+      <a href="https://docs.anthropic.com" target="_blank" class="tool-link">Docs</a>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-category cat-brain">&#x25CF; Kern-KI</div>
+      <div class="tool-name">OpenAI GPT-4o / o3</div>
+      <div class="tool-desc">Zweites Gehirn. Bild-Generierung mit DALL·E, Whisper für Voice, Assistants API für spezialisierte Sub-Agents.</div>
+      <div class="tool-tags"><span class="tag">gpt-4o</span><span class="tag">o3</span><span class="tag">assistants</span></div>
+      <a href="https://platform.openai.com" target="_blank" class="tool-link">&#x2197; OpenAI Platform</a>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-category cat-brain">&#x25CF; Kern-KI</div>
+      <div class="tool-name">Google Gemini 2.5 Pro</div>
+      <div class="tool-desc">1M-Token-Kontext. Perfekt für riesige Dokumente, Datenbanken und Multi-Modal. Dritte Gehirnschicht.</div>
+      <div class="tool-tags"><span class="tag">gemini-2.5-pro</span><span class="tag">multimodal</span></div>
+      <a href="https://aistudio.google.com" target="_blank" class="tool-link">&#x2197; AI Studio</a>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-category cat-brain">&#x25CF; Orchestrierung</div>
+      <div class="tool-name">LangGraph</div>
+      <div class="tool-desc">State-Machine für Agenten-Workflows. Baut komplexe Multi-Agent-Pipelines. Der Dirigent. Beste Kontrolle über Agenten-Logik.</div>
+      <div class="tool-tags"><span class="tag">graph-agents</span><span class="tag">state</span><span class="tag">python</span></div>
+      <a href="https://langchain-ai.github.io/langgraph" target="_blank" class="tool-link">&#x2197; LangGraph Docs</a>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-category cat-brain">&#x25CF; Orchestrierung</div>
+      <div class="tool-name">CrewAI</div>
+      <div class="tool-desc">Team-basiertes Agenten-System. Definiere Rollen wie "Research Manager", "Content Writer", "Sales Agent". Einfachste Syntax für Crews.</div>
+      <div class="tool-tags"><span class="tag">crews</span><span class="tag">roles</span><span class="tag">tasks</span></div>
+      <a href="https://crewai.com" target="_blank" class="tool-link">&#x2197; CrewAI</a>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-category cat-brain">&#x25CF; Orchestrierung</div>
+      <div class="tool-name">Microsoft AutoGen</div>
+      <div class="tool-desc">Multi-Agent-Conversation-Framework von Microsoft. Agenten reden miteinander. 10.000+ parallele Sessions möglich.</div>
+      <div class="tool-tags"><span class="tag">multi-agent</span><span class="tag">parallel</span><span class="tag">microsoft</span></div>
+      <a href="https://microsoft.github.io/autogen" target="_blank" class="tool-link">&#x2197; AutoGen</a>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-category cat-brain">&#x25CF; Speicher / Memory</div>
+      <div class="tool-name">Pinecone + Redis</div>
+      <div class="tool-desc">Pinecone: Vektordatenbank für semantisches Gedächtnis. Redis: Schneller Working-Memory. Zusammen bilden sie Jarvis' Langzeit- und Kurzzeitgedächtnis.</div>
+      <div class="tool-tags"><span class="tag">vector-db</span><span class="tag">cache</span><span class="tag">memory</span></div>
+      <a href="https://pinecone.io" target="_blank" class="tool-link">&#x2197; Pinecone</a>
+      <a href="https://redis.io" target="_blank" class="tool-link blue">Redis</a>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-category cat-memory">&#x25CF; Wissensbasis</div>
+      <div class="tool-name">Mem0 + Obsidian</div>
+      <div class="tool-desc">Mem0: Persistentes KI-Gedächtnis über Sessions. Obsidian: Deine persönliche Wissensdatenbank mit Graph-View. Jarvis liest dein Obsidian.</div>
+      <div class="tool-tags"><span class="tag">RAG</span><span class="tag">knowledge</span><span class="tag">context</span></div>
+      <a href="https://mem0.ai" target="_blank" class="tool-link">&#x2197; Mem0</a>
+      <a href="https://obsidian.md" target="_blank" class="tool-link blue">Obsidian</a>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-category cat-monitor">&#x25CF; Monitoring</div>
+      <div class="tool-name">Langfuse</div>
+      <div class="tool-desc">Observability für alle Agenten. Sieh jeden Prompt, jede Antwort, jeden Fehler. Cost-Tracking. Selbst-hostbar. Jarvis' Kontrollraum.</div>
+      <div class="tool-tags"><span class="tag">tracing</span><span class="tag">analytics</span><span class="tag">self-host</span></div>
+      <a href="https://langfuse.com" target="_blank" class="tool-link">&#x2197; Langfuse</a>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- HANDS — PC CONTROL -->
+<section id="hands">
+  <div class="section-label">03 — Die Hände</div>
+  <div class="section-title">Jarvis steuert<br>deinen PC</div>
+
+  <div class="hands-grid fade-in">
+    <div class="hand-card">
+      <div class="hand-icon">&#x1F5A5;</div>
+      <div class="hand-title">CLAUDE CODE</div>
+      <div class="hand-desc">Jarvis' stärkste Hand. Steuert Terminal, schreibt Code, führt Dateien aus, öffnet Browser — alles auf Befehl.</div>
+      <a href="https://docs.anthropic.com/claude-code" target="_blank" class="tool-link">&#x2197; Claude Code installieren</a>
+    </div>
+    <div class="hand-card">
+      <div class="hand-icon">&#x1F91A;</div>
+      <div class="hand-title">FINGER-CONTROL</div>
+      <div class="hand-desc">MediaPipe Hands + OpenCV: Jarvis erkennt deine Finger per Webcam. Gesten steuern Aktionen — kein Tippen.</div>
+      <a href="https://mediapipe-studio.webapps.google.com/home" target="_blank" class="tool-link">&#x2197; MediaPipe Studio</a>
+    </div>
+    <div class="hand-card">
+      <div class="hand-icon">&#x1F4BB;</div>
+      <div class="hand-title">COMPUTER-USE</div>
+      <div class="hand-desc">Claude Computer-Use API: Jarvis sieht deinen Bildschirm, klickt, tippt, navigiert — wie ein echter Mensch am PC.</div>
+      <a href="https://docs.anthropic.com/en/docs/agents-and-tools/computer-use" target="_blank" class="tool-link">&#x2197; Computer-Use Docs</a>
+    </div>
+  </div>
+
+  <div style="background:var(--panel);border:1px solid var(--border);padding:2rem;border-left:3px solid var(--accent2);" class="fade-in">
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent2);letter-spacing:3px;margin-bottom:1rem;">FINGER-STEUERUNG SETUP</div>
+    <div class="code-block">
+<span class="comment"># 1. Finger-Tracking mit MediaPipe installieren</span>
+pip install mediapipe opencv-python pyautogui anthropic
+
+<span class="comment"># 2. Jarvis Finger-Controller (jarvis_hands.py)</span>
+<span class="kw">import</span> cv2, mediapipe <span class="kw">as</span> mp, pyautogui, anthropic
+
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(max_num_hands=<span class="str">2</span>)
+
+<span class="comment"># Daumen + Zeigefinger = Klick</span>
+<span class="comment"># Alle 5 Finger = Screenshot an Jarvis senden</span>
+<span class="comment"># Faust = Jarvis stoppen</span>
+
+<span class="kw">def</span> gesture_to_command(landmarks):
+    fingers = count_fingers(landmarks)
+    <span class="kw">if</span> fingers == <span class="str">2</span>: jarvis.execute(<span class="str">"screenshot_and_analyze"</span>)
+    <span class="kw">if</span> fingers == <span class="str">5</span>: jarvis.execute(<span class="str">"open_control_panel"</span>)
+    <span class="kw">if</span> fingers == <span class="str">0</span>: jarvis.execute(<span class="str">"pause_all_agents"</span>)
+    </div>
+    <a href="https://github.com/google-ai-edge/mediapipe" target="_blank" class="tool-link">&#x2197; MediaPipe GitHub</a>
+    <a href="https://pypi.org/project/pyautogui" target="_blank" class="tool-link blue">PyAutoGUI</a>
+  </div>
+
+  <div style="margin-top:2rem;background:var(--panel);border:1px solid var(--border);padding:2rem;border-left:3px solid var(--accent);" class="fade-in">
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:3px;margin-bottom:1rem;">CLAUDE CODE — PC VOLLKONTROLLE</div>
+    <div class="code-block">
+<span class="comment"># Claude Code installieren</span>
+npm install -g @anthropic-ai/claude-code
+
+<span class="comment"># Starten im Projektordner</span>
+claude
+
+<span class="comment"># Jarvis befiehlt Claude Code:</span>
+<span class="str">"Öffne Chrome, gehe zu instagram.com, poste diesen Text,
+ mache einen Screenshot und schicke ihn mir"</span>
+
+<span class="comment"># Claude Code kann:</span>
+<span class="comment"># ✓ Dateien lesen/schreiben/löschen</span>
+<span class="comment"># ✓ Terminal-Befehle ausführen</span>
+<span class="comment"># ✓ Browser steuern (Playwright)</span>
+<span class="comment"># ✓ APIs aufrufen</span>
+<span class="comment"># ✓ Git commits pushen</span>
+<span class="comment"># ✓ Docker container starten</span>
+    </div>
+    <a href="https://docs.anthropic.com/claude-code" target="_blank" class="tool-link">&#x2197; Claude Code Docs</a>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- 10K AGENTS -->
+<section id="agents">
+  <div class="section-label">04 — Das Agenten-Team</div>
+  <div class="section-title">10.000 Agenten.<br>Eine Mission.</div>
+
+  <div class="agents-ring fade-in">
+
+    <div class="agent-card" style="border-left:2px solid var(--accent);">
+      <div class="agent-num">AG-001</div>
+      <div class="agent-name">Research Agent</div>
+      <div class="agent-role">Sammelt Infos aus dem Web, Docs, PDFs</div>
+      <div class="agent-tools"><span class="agent-tool">Perplexity</span><span class="agent-tool">Firecrawl</span><span class="agent-tool">Tavily</span></div>
+    </div>
+
+    <div class="agent-card" style="border-left:2px solid var(--accent2);">
+      <div class="agent-num">AG-002</div>
+      <div class="agent-name">Content Agent</div>
+      <div class="agent-role">Schreibt Posts, Hooks, Captions, Skripte</div>
+      <div class="agent-tools"><span class="agent-tool">Claude</span><span class="agent-tool">GPT-4o</span></div>
+    </div>
+
+    <div class="agent-card" style="border-left:2px solid var(--accent3);">
+      <div class="agent-num">AG-003</div>
+      <div class="agent-name">Video Agent</div>
+      <div class="agent-role">Erstellt, schneidet und postet Videos</div>
+      <div class="agent-tools"><span class="agent-tool">Runway</span><span class="agent-tool">Kling</span><span class="agent-tool">Sora</span></div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num">AG-004</div>
+      <div class="agent-name">Design Agent</div>
+      <div class="agent-role">Generiert Bilder, Thumbnails, Logos</div>
+      <div class="agent-tools"><span class="agent-tool">Midjourney</span><span class="agent-tool">Flux</span><span class="agent-tool">Ideogram</span></div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num">AG-005</div>
+      <div class="agent-name">Coding Agent</div>
+      <div class="agent-role">Schreibt, testet und deployed Code</div>
+      <div class="agent-tools"><span class="agent-tool">Claude Code</span><span class="agent-tool">Cursor</span></div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num">AG-006</div>
+      <div class="agent-name">Sales Agent</div>
+      <div class="agent-role">Qualifiziert Leads, schreibt Angebote</div>
+      <div class="agent-tools"><span class="agent-tool">HubSpot</span><span class="agent-tool">Clay</span></div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num">AG-007</div>
+      <div class="agent-name">Voice Agent</div>
+      <div class="agent-role">Telefoniert, transkribiert, antwortet</div>
+      <div class="agent-tools"><span class="agent-tool">ElevenLabs</span><span class="agent-tool">Vapi</span></div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num">AG-008</div>
+      <div class="agent-name">Monitor Agent</div>
+      <div class="agent-role">Überwacht alle Systeme, heilt Fehler</div>
+      <div class="agent-tools"><span class="agent-tool">Langfuse</span><span class="agent-tool">Grafana</span></div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num">AG-009</div>
+      <div class="agent-name">Lead Agent</div>
+      <div class="agent-role">Findet, scrapt und qualifiziert Leads</div>
+      <div class="agent-tools"><span class="agent-tool">Apollo</span><span class="agent-tool">Hunter</span></div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num">AG-010</div>
+      <div class="agent-name">Support Agent</div>
+      <div class="agent-role">Beantwortet Kundenfragen 24/7</div>
+      <div class="agent-tools"><span class="agent-tool">Intercom</span><span class="agent-tool">Crisp</span></div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num">AG-011</div>
+      <div class="agent-name">Analytics Agent</div>
+      <div class="agent-role">Analysiert Daten, erstellt Reports</div>
+      <div class="agent-tools"><span class="agent-tool">Metabase</span><span class="agent-tool">PostHog</span></div>
+    </div>
+
+    <div class="agent-card" style="background:#111;border-left:2px solid var(--muted);">
+      <div class="agent-num">AG-012+</div>
+      <div class="agent-name" style="color:var(--muted);">+ 9.988 weitere</div>
+      <div class="agent-role">Skaliert automatisch bei Bedarf</div>
+      <div class="agent-tools"><span class="agent-tool">AutoGen</span><span class="agent-tool">LangGraph</span></div>
+    </div>
+
+  </div>
+
+  <div style="background:var(--panel);border:1px solid var(--border);padding:2rem;" class="fade-in">
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:3px;margin-bottom:1.5rem;">AGENTEN-KOMMUNIKATION MIT AUTOGEN</div>
+    <div class="code-block">
+<span class="comment"># 10.000 Agenten gleichzeitig — AutoGen + Ray</span>
+pip install pyautogen ray
+
+<span class="kw">import</span> ray
+ray.init()  <span class="comment"># Verteilt auf alle CPU-Kerne</span>
+
+<span class="kw">@ray.remote</span>
+<span class="kw">class</span> JarvisAgent:
+    <span class="kw">def</span> __init__(self, agent_id, role):
+        self.brain = anthropic.Anthropic()
+        self.id = agent_id
+        self.role = role
+    
+    <span class="kw">async def</span> work(self, task):
+        <span class="comment"># Jeder Agent denkt, handelt, meldet zurück</span>
+        result = <span class="kw">await</span> self.brain.messages.create(...)
+        <span class="kw">return</span> result
+
+<span class="comment"># 10.000 Agenten starten</span>
+agents = [JarvisAgent.remote(i, roles[i]) <span class="kw">for</span> i <span class="kw">in</span> range(<span class="str">10000</span>)]
+results = ray.get([a.work.remote(tasks[i]) <span class="kw">for</span> i,a <span class="kw">in</span> enumerate(agents)])
+    </div>
+    <a href="https://microsoft.github.io/autogen" target="_blank" class="tool-link">&#x2197; AutoGen</a>
+    <a href="https://ray.io" target="_blank" class="tool-link blue">Ray.io (Skalierung)</a>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FULL TOOL STACK -->
+<section id="tools">
+  <div class="section-label">05 — Kompletter Tool-Stack</div>
+  <div class="section-title">Jedes Tool.<br>Jeder Link.</div>
+
+  <table class="stack-table fade-in">
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Kategorie</th>
+        <th>Wofür</th>
+        <th>Link</th>
+        <th>Kosten</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Claude API</td><td><span class="tool-category cat-brain" style="margin:0;padding:2px 8px;font-size:9px;">Gehirn</span></td><td>Kern-KI, Computer-Use, Reasoning</td><td><a href="https://console.anthropic.com" target="_blank">&#x2197; console.anthropic.com</a></td><td>Pay-per-use</td></tr>
+      <tr><td>Claude Code</td><td><span class="tool-category cat-hands" style="margin:0;padding:2px 8px;font-size:9px;">Hände</span></td><td>PC steuern, Code schreiben, Terminal</td><td><a href="https://docs.anthropic.com/claude-code" target="_blank">&#x2197; Docs</a></td><td>Free</td></tr>
+      <tr><td>LangGraph</td><td><span class="tool-category cat-brain" style="margin:0;padding:2px 8px;font-size:9px;">Orchestrierung</span></td><td>Agenten-Workflows, State Machines</td><td><a href="https://python.langchain.com/docs/langgraph" target="_blank">&#x2197; Docs</a></td><td>Open Source</td></tr>
+      <tr><td>CrewAI</td><td><span class="tool-category cat-brain" style="margin:0;padding:2px 8px;font-size:9px;">Orchestrierung</span></td><td>Rollen-basierte Agenten-Teams</td><td><a href="https://crewai.com" target="_blank">&#x2197; crewai.com</a></td><td>Free/Pro</td></tr>
+      <tr><td>AutoGen + Ray</td><td><span class="tool-category cat-brain" style="margin:0;padding:2px 8px;font-size:9px;">Skalierung</span></td><td>10.000+ parallele Agenten</td><td><a href="https://microsoft.github.io/autogen" target="_blank">&#x2197; AutoGen</a></td><td>Open Source</td></tr>
+      <tr><td>n8n</td><td><span class="tool-category cat-hands" style="margin:0;padding:2px 8px;font-size:9px;">Automation</span></td><td>No-Code Workflows, self-hostbar</td><td><a href="https://n8n.io" target="_blank">&#x2197; n8n.io</a></td><td>Free self-host</td></tr>
+      <tr><td>Make (Integromat)</td><td><span class="tool-category cat-hands" style="margin:0;padding:2px 8px;font-size:9px;">Automation</span></td><td>Business-Automationen, 2000+ Apps</td><td><a href="https://make.com" target="_blank">&#x2197; make.com</a></td><td>9€/mo</td></tr>
+      <tr><td>MediaPipe</td><td><span class="tool-category cat-gesture" style="margin:0;padding:2px 8px;font-size:9px;">Gesten</span></td><td>Finger-Tracking per Webcam</td><td><a href="https://mediapipe-studio.webapps.google.com" target="_blank">&#x2197; Studio</a></td><td>Free</td></tr>
+      <tr><td>PyAutoGUI</td><td><span class="tool-category cat-gesture" style="margin:0;padding:2px 8px;font-size:9px;">PC-Control</span></td><td>Maus, Tastatur per Python steuern</td><td><a href="https://pyautogui.readthedocs.io" target="_blank">&#x2197; Docs</a></td><td>Free</td></tr>
+      <tr><td>Playwright</td><td><span class="tool-category cat-hands" style="margin:0;padding:2px 8px;font-size:9px;">Browser-Control</span></td><td>Browser automatisieren, scrapen</td><td><a href="https://playwright.dev" target="_blank">&#x2197; playwright.dev</a></td><td>Free</td></tr>
+      <tr><td>ElevenLabs</td><td><span class="tool-category cat-voice" style="margin:0;padding:2px 8px;font-size:9px;">Voice</span></td><td>Jarvis' Stimme, Voice-Klone</td><td><a href="https://elevenlabs.io" target="_blank">&#x2197; elevenlabs.io</a></td><td>Free/22€</td></tr>
+      <tr><td>Vapi.ai</td><td><span class="tool-category cat-voice" style="margin:0;padding:2px 8px;font-size:9px;">Voice Agent</span></td><td>Telefonagenten, Voice-Workflows</td><td><a href="https://vapi.ai" target="_blank">&#x2197; vapi.ai</a></td><td>Pay-per-min</td></tr>
+      <tr><td>Whisper (OpenAI)</td><td><span class="tool-category cat-voice" style="margin:0;padding:2px 8px;font-size:9px;">STT</span></td><td>Sprache zu Text, offline möglich</td><td><a href="https://github.com/openai/whisper" target="_blank">&#x2197; GitHub</a></td><td>Free</td></tr>
+      <tr><td>Runway ML</td><td><span class="tool-category cat-film" style="margin:0;padding:2px 8px;font-size:9px;">Video/Film</span></td><td>KI-Video-Generierung, Gen-4</td><td><a href="https://runwayml.com" target="_blank">&#x2197; runwayml.com</a></td><td>15$/mo</td></tr>
+      <tr><td>Kling AI</td><td><span class="tool-category cat-film" style="margin:0;padding:2px 8px;font-size:9px;">Video/Film</span></td><td>Realistische KI-Videos, 5 Sek bis 2 Min</td><td><a href="https://klingai.com" target="_blank">&#x2197; klingai.com</a></td><td>Free/Pro</td></tr>
+      <tr><td>Sora (OpenAI)</td><td><span class="tool-category cat-film" style="margin:0;padding:2px 8px;font-size:9px;">Video/Film</span></td><td>Cineastische Video-Generierung</td><td><a href="https://sora.openai.com" target="_blank">&#x2197; sora.openai.com</a></td><td>20$/mo</td></tr>
+      <tr><td>Midjourney</td><td><span class="tool-category cat-content" style="margin:0;padding:2px 8px;font-size:9px;">Bild-KI</span></td><td>Beste Bild-Qualität, cineastisch</td><td><a href="https://midjourney.com" target="_blank">&#x2197; midjourney.com</a></td><td>10$/mo</td></tr>
+      <tr><td>Flux (Black Forest)</td><td><span class="tool-category cat-content" style="margin:0;padding:2px 8px;font-size:9px;">Bild-KI</span></td><td>Open-Source Bildgenerierung, self-host</td><td><a href="https://replicate.com/black-forest-labs/flux-1.1-pro" target="_blank">&#x2197; Replicate</a></td><td>Pay-per-use</td></tr>
+      <tr><td>Pinecone</td><td><span class="tool-category cat-memory" style="margin:0;padding:2px 8px;font-size:9px;">Gedächtnis</span></td><td>Vektordatenbank für RAG</td><td><a href="https://pinecone.io" target="_blank">&#x2197; pinecone.io</a></td><td>Free/70$/mo</td></tr>
+      <tr><td>Mem0</td><td><span class="tool-category cat-memory" style="margin:0;padding:2px 8px;font-size:9px;">Gedächtnis</span></td><td>Persistentes Agenten-Gedächtnis</td><td><a href="https://mem0.ai" target="_blank">&#x2197; mem0.ai</a></td><td>Free/Pro</td></tr>
+      <tr><td>Langfuse</td><td><span class="tool-category cat-monitor" style="margin:0;padding:2px 8px;font-size:9px;">Monitoring</span></td><td>Agenten-Observability, Tracing</td><td><a href="https://langfuse.com" target="_blank">&#x2197; langfuse.com</a></td><td>Free self-host</td></tr>
+      <tr><td>Grafana</td><td><span class="tool-category cat-monitor" style="margin:0;padding:2px 8px;font-size:9px;">Dashboard</span></td><td>System-Dashboards, Metriken</td><td><a href="https://grafana.com" target="_blank">&#x2197; grafana.com</a></td><td>Free</td></tr>
+      <tr><td>Supabase</td><td><span class="tool-category cat-code" style="margin:0;padding:2px 8px;font-size:9px;">Datenbank</span></td><td>Postgres + Auth + Storage</td><td><a href="https://supabase.com" target="_blank">&#x2197; supabase.com</a></td><td>Free/25$/mo</td></tr>
+      <tr><td>HubSpot</td><td><span class="tool-category cat-sales" style="margin:0;padding:2px 8px;font-size:9px;">CRM/Sales</span></td><td>CRM, Leads, E-Mail-Marketing</td><td><a href="https://hubspot.com" target="_blank">&#x2197; hubspot.com</a></td><td>Free</td></tr>
+      <tr><td>Instantly.ai</td><td><span class="tool-category cat-sales" style="margin:0;padding:2px 8px;font-size:9px;">Cold Email</span></td><td>Automatisierte Kaltakquise per E-Mail</td><td><a href="https://instantly.ai" target="_blank">&#x2197; instantly.ai</a></td><td>30$/mo</td></tr>
+      <tr><td>Cursor</td><td><span class="tool-category cat-code" style="margin:0;padding:2px 8px;font-size:9px;">Coding</span></td><td>KI-IDE für Code-Entwicklung</td><td><a href="https://cursor.sh" target="_blank">&#x2197; cursor.sh</a></td><td>20$/mo</td></tr>
+      <tr><td>Vercel</td><td><span class="tool-category cat-code" style="margin:0;padding:2px 8px;font-size:9px;">Deployment</span></td><td>Webseiten deployen, serverless</td><td><a href="https://vercel.com" target="_blank">&#x2197; vercel.com</a></td><td>Free/20$/mo</td></tr>
+      <tr><td>Firecrawl</td><td><span class="tool-category cat-brain" style="margin:0;padding:2px 8px;font-size:9px;">Scraping</span></td><td>Webseiten zu KI-lesbarem Text</td><td><a href="https://firecrawl.dev" target="_blank">&#x2197; firecrawl.dev</a></td><td>Free/20$/mo</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="divider">
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="section-label">06 — Bauplan</div>
+  <div class="section-title">In 4 Phasen<br>zum Imperium</div>
+
+  <div class="roadmap fade-in">
+    <div class="phase active">
+      <div class="phase-num">01</div>
+      <div class="phase-title">Gehirn aufbauen</div>
+      <ul class="phase-items">
+        <li>Claude API + API Keys</li>
+        <li>LangGraph installieren</li>
+        <li>Pinecone Vektordatenbank</li>
+        <li>Langfuse Monitoring</li>
+        <li>Ersten Jarvis-Agenten bauen</li>
+        <li>n8n lokal starten</li>
+        <li>Obsidian Wissensbasis</li>
+        <li>Claude Code einrichten</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <div class="phase-num">02</div>
+      <div class="phase-title">Hände geben</div>
+      <ul class="phase-items">
+        <li>Computer-Use aktivieren</li>
+        <li>MediaPipe Finger-Tracking</li>
+        <li>Playwright Browser-Control</li>
+        <li>Voice mit ElevenLabs</li>
+        <li>PyAutoGUI PC-Steuerung</li>
+        <li>Whisper Spracheingabe</li>
+        <li>Multi-Agenten-Team</li>
+        <li>CrewAI Rollen definieren</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <div class="phase-num">03</div>
+      <div class="phase-title">Maschine bauen</div>
+      <ul class="phase-items">
+        <li>Content-Pipeline automatisch</li>
+        <li>Sales-Funnel mit KI</li>
+        <li>Video-Produktion (Runway)</li>
+        <li>Lead-Generierung</li>
+        <li>E-Mail-Automationen</li>
+        <li>Dashboard + Monitoring</li>
+        <li>Self-Healing-Logik</li>
+        <li>100+ Agenten aktiv</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <div class="phase-num">04</div>
+      <div class="phase-title">Imperium skalieren</div>
+      <ul class="phase-items">
+        <li>AutoGen + Ray 10K Agenten</li>
+        <li>Eigene SaaS-Produkte live</li>
+        <li>KI-Film / Serienproduktion</li>
+        <li>Mehrere Marken gleichzeitig</li>
+        <li>Digitale Mitarbeiter</li>
+        <li>Wiederkehrender Umsatz</li>
+        <li>Vollautomatisch 24/7</li>
+        <li>Jarvis läuft alleine</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- INSTANT START -->
+<section>
+  <div class="section-label">07 — Sofort starten</div>
+  <div class="section-title">Tag 1 —<br>Das Setup</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);" class="fade-in">
+    <div style="background:var(--panel);padding:2rem;">
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:3px;margin-bottom:1rem;">SCHRITT 1 — ACCOUNTS</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <a href="https://console.anthropic.com" target="_blank" style="display:flex;justify-content:space-between;align-items:center;background:var(--dark);padding:10px 14px;text-decoration:none;border:1px solid var(--border);transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="color:#fff;font-size:13px;">Anthropic Console</span>
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">API KEY &#x2197;</span>
+        </a>
+        <a href="https://platform.openai.com/signup" target="_blank" style="display:flex;justify-content:space-between;align-items:center;background:var(--dark);padding:10px 14px;text-decoration:none;border:1px solid var(--border);transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="color:#fff;font-size:13px;">OpenAI Platform</span>
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">API KEY &#x2197;</span>
+        </a>
+        <a href="https://app.pinecone.io" target="_blank" style="display:flex;justify-content:space-between;align-items:center;background:var(--dark);padding:10px 14px;text-decoration:none;border:1px solid var(--border);transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="color:#fff;font-size:13px;">Pinecone</span>
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">VEKTORDATENBANK &#x2197;</span>
+        </a>
+        <a href="https://cloud.langfuse.com" target="_blank" style="display:flex;justify-content:space-between;align-items:center;background:var(--dark);padding:10px 14px;text-decoration:none;border:1px solid var(--border);transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="color:#fff;font-size:13px;">Langfuse</span>
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">MONITORING &#x2197;</span>
+        </a>
+        <a href="https://elevenlabs.io" target="_blank" style="display:flex;justify-content:space-between;align-items:center;background:var(--dark);padding:10px 14px;text-decoration:none;border:1px solid var(--border);transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="color:#fff;font-size:13px;">ElevenLabs</span>
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">JARVIS VOICE &#x2197;</span>
+        </a>
+      </div>
+    </div>
+    <div style="background:var(--panel);padding:2rem;border-left:1px solid var(--border);">
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent2);letter-spacing:3px;margin-bottom:1rem;">SCHRITT 2 — INSTALL</div>
+      <div class="code-block" style="margin:0;">
+<span class="comment"># Python + Node.js (Basis)</span>
+python --version  <span class="comment"># ≥ 3.11</span>
+node --version    <span class="comment"># ≥ 18</span>
+
+<span class="comment"># Kern-Pakete</span>
+pip install anthropic langgraph crewai \
+  mediapipe opencv-python pyautogui \
+  pinecone-client mem0ai langfuse ray
+
+<span class="comment"># Claude Code</span>
+npm install -g @anthropic-ai/claude-code
+
+<span class="comment"># n8n (Automation, lokal)</span>
+npx n8n
+
+<span class="comment"># .env Datei</span>
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+PINECONE_API_KEY=...
+ELEVENLABS_API_KEY=...
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);letter-spacing:6px;margin-bottom:1rem;">JARVIS MASTER BLUEPRINT</div>
+  <div>Du baust kein Tool. Du baust ein <span>Imperium</span>.</div>
+  <div style="margin-top:1rem;color:var(--dimmed);">Erstellt mit Claude &middot; Alle Links extern &middot; Kein Sponsor</div>
+</footer>
+
+<script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
